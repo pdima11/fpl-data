@@ -1,11 +1,14 @@
 package com.fpldata.http
 
 import com.fpldata.config.FPLApiConfig
-import com.fpldata.model.BootstrapData
+import com.fpldata.model.{BootstrapData, Player, PlayerStat}
 import sttp.client.HttpURLConnectionBackend
 import io.circe.Error
 import sttp.client._
 import sttp.client.circe._
+import cats.instances.either._
+import cats.instances.list._
+import cats.syntax.traverse._
 
 
 
@@ -14,11 +17,34 @@ class FPLHttpClient(apiConfig: FPLApiConfig) {
 
     private val baseURL = apiConfig.baseUrl
 
-    def getBootstrapData(): Either[ResponseError[Error], BootstrapData] = {
-        val request = basicRequest
+    def getBootstrapData: Either[ResponseError[Error], BootstrapData] = {
+        val response = basicRequest
           .get(uri"$baseURL${apiConfig.allInfoEndpoint}")
           .response(asJson[BootstrapData])
-        val response = request.send()
+          .send()
+        response.body
+    }
+
+    def getPlayersStatData: Either[ResponseError[Error], List[PlayerStat]] =
+        getBootstrapData match {
+            case Left(error) => Left(error)
+            case Right(data) => data.playersInfo.take(5).map(info => getPlayerStatDataById(info.id)).sequence
+        }
+
+
+    def getPlayersData: Either[ResponseError[Error], List[Player]] = {
+        (getBootstrapData, getPlayersStatData) match {
+            case (Right(BootstrapData(_, info)), Right(stats)) => Right(info.zip(stats).take(5).map{ case (pi, ps) => Player(pi, ps)})
+            case (Left(error), _) => Left(error)
+            case (_, Left(error)) => Left(error)
+        }
+    }
+
+    def getPlayerStatDataById(playerId: Long): Either[ResponseError[Error], PlayerStat] = {
+        val response = basicRequest
+          .get(uri"$baseURL${apiConfig.playerStatEndpoint}$playerId/")
+          .response(asJson[PlayerStat])
+          .send()
         response.body
     }
 }

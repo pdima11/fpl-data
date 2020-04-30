@@ -19,7 +19,9 @@ lazy val root = (project in file("."))
       Circe.Core,
       Circe.Generic,
       Circe.GenericExtras,
-      Circe.Parser
+      Circe.Parser,
+      Cats.core,
+      Cats.effect
     ),
   )
 

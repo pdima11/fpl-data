@@ -11,7 +11,7 @@ case class AppConfig (
 case class FPLApiConfig(
   baseUrl: String,
   allInfoEndpoint: String,
-  playerInfoEndpoint: String
+  playerStatEndpoint: String
 )
 
 object AppConfig {

@@ -4,7 +4,7 @@ import io.circe.generic.extras.{Configuration, ConfiguredJsonCodec, JsonKey}
 
 @ConfiguredJsonCodec final case class BootstrapData(
     teams: List[Team],
-    @JsonKey("elements") players: List[Player]
+    @JsonKey("elements") playersInfo: List[PlayerInfo]
 )
 
 object BootstrapData {
