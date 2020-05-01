@@ -15,21 +15,15 @@ class FPLHttpClient(apiConfig: FPLApiConfig) {
   private implicit val sttpBackend = HttpURLConnectionBackend()
 
   private val baseURL = apiConfig.baseUrl
+  private val bootstrapData = requestBootstrapData
 
-  def getBootstrapData: Either[ResponseError[Error], BootstrapData] = {
-    val response = basicRequest
-      .get(uri"$baseURL${apiConfig.allInfoEndpoint}")
-      .response(asJson[BootstrapData])
-      .send()
-    response.body
-  }
+  def getBootstrapData: Either[ResponseError[Error], BootstrapData] = bootstrapData
 
   def getPlayersStatData: Either[ResponseError[Error], List[PlayerStat]] =
     getBootstrapData match {
       case Left(error) => Left(error)
       case Right(data) => data.playersInfo.map(info => getPlayerStatDataById(info.id)).sequence
     }
-
 
   def getPlayersData: Either[ResponseError[Error], List[Player]] = {
     (getBootstrapData, getPlayersStatData) match {
@@ -43,6 +37,14 @@ class FPLHttpClient(apiConfig: FPLApiConfig) {
     val response = basicRequest
       .get(uri"$baseURL${apiConfig.playerStatEndpoint}$playerId/")
       .response(asJson[PlayerStat])
+      .send()
+    response.body
+  }
+
+  private def requestBootstrapData: Either[ResponseError[Error], BootstrapData] = {
+    val response = basicRequest
+      .get(uri"$baseURL${apiConfig.allInfoEndpoint}")
+      .response(asJson[BootstrapData])
       .send()
     response.body
   }
