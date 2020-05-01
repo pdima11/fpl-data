@@ -26,4 +26,5 @@ object Dependencies {
     val core = "org.typelevel" %% "cats-core" % version
     val effect = "org.typelevel" %% "cats-effect" % version
   }
+
 }
