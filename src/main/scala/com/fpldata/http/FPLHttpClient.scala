@@ -1,7 +1,7 @@
 package com.fpldata.http
 
 import com.fpldata.config.FPLApiConfig
-import com.fpldata.model.{BootstrapData, Player, PlayerStat}
+import com.fpldata.model.{BootstrapData, Player, PlayerStat, Team}
 import sttp.client.HttpURLConnectionBackend
 import io.circe.Error
 import sttp.client._
@@ -18,6 +18,8 @@ class FPLHttpClient(apiConfig: FPLApiConfig) {
   private val bootstrapData = requestBootstrapData
 
   def getBootstrapData: Either[ResponseError[Error], BootstrapData] = bootstrapData
+
+  def getTeamsData: Either[ResponseError[Error], List[Team]] = getBootstrapData.map(_.teams)
 
   def getPlayersStatData: Either[ResponseError[Error], List[PlayerStat]] =
     getBootstrapData match {
